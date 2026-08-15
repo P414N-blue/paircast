@@ -121,7 +121,8 @@
 
     /* 이미지 슬롯 공통 */
     .img-slot {
-      background-color: rgba(247, 247, 249, 0.85);
+      background-color: rgba(255, 255, 255, 0.75); /* 기본 상태 및 이미지 첨부 시 반투명 배경 유지 */
+      backdrop-filter: blur(2px);
       border: 1px dashed #b0b0b0;
       border-radius: 6px;
       position: relative;
@@ -130,8 +131,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.2s ease;
-      touch-action: none; /* 스크롤 방지 */
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      touch-action: none;
     }
 
     .img-slot:hover {
@@ -169,8 +170,8 @@
 
     .img-slot.has-image {
       border-style: solid;
-      border-color: rgba(0,0,0,0.1);
-      background-color: transparent;
+      border-color: rgba(0, 0, 0, 0.1);
+      background-color: rgba(255, 255, 255, 0.75); /* 이미지 첨부 후에도 반투명 흰색 배경 유지 */
     }
 
     .img-slot.has-image img {
@@ -181,22 +182,22 @@
       display: none;
     }
 
-    /* 지정 비율 및 형태 */
+    /* 지정 비율 */
     .eye-slot {
       width: 100%;
-      aspect-ratio: 3.2 / 1; /* 눈 서브 슬롯 */
+      aspect-ratio: 3.2 / 1;
     }
 
     .head-slot {
-      aspect-ratio: 1 / 1; /* 두상 1:1 */
+      aspect-ratio: 1 / 1;
     }
 
     .sd-slot {
-      aspect-ratio: 3 / 4; /* SD 전신 3:4 */
+      aspect-ratio: 3 / 4;
     }
 
     .animal-slot {
-      aspect-ratio: 9 / 7; /* 동물화 9:7 */
+      aspect-ratio: 9 / 7;
       width: 100%;
     }
 
@@ -234,20 +235,19 @@
 
     .signature-slot {
       height: 55px;
-      background-color: rgba(255, 255, 255, 0.6);
     }
 
+    /* 텍스트 입력 상자 */
     .text-area-box {
       display: flex;
       flex-direction: column;
       flex: 1;
     }
 
-    .text-area-box textarea {
+    .text-input-div {
       border: 1px solid rgba(0,0,0,0.12);
       border-radius: 6px;
       outline: none;
-      resize: none;
       background: rgba(255, 255, 255, 0.75);
       padding: 8px;
       font-size: 12px;
@@ -256,6 +256,20 @@
       width: 100%;
       height: 100%;
       backdrop-filter: blur(2px);
+      overflow-y: auto;
+      
+      /* 줄바꿈 및 html2canvas 캡처 보정 속성 */
+      white-space: pre-wrap;
+      word-break: break-all;
+      word-wrap: break-word;
+      user-select: text;
+    }
+
+    .text-input-div:empty:before {
+      content: attr(data-placeholder);
+      color: #888888;
+      pointer-events: none;
+      display: block;
     }
 
     /* 중앙 일러스트 컬럼 */
@@ -299,7 +313,6 @@
       <!-- 좌측 캐릭터 A -->
       <div class="char-column">
         <div class="top-duo">
-          <!-- 눈 A + 두상 A 세로 배치 영역 -->
           <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
             <div class="img-slot eye-slot">
               <span class="placeholder-text">눈 A</span>
@@ -312,7 +325,6 @@
               <img src="" alt="두상 A">
             </div>
           </div>
-          <!-- SD 전신 A (3:4) -->
           <div class="img-slot sd-slot" style="flex: 1;">
             <span class="placeholder-text">SD 전신 A (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
@@ -335,10 +347,10 @@
             <div class="img-slot signature-slot">
               <span class="placeholder-text">기타 A</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 A">
+              <img src="" alt="기타 이미지 A">
             </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 A 설명..."></textarea>
+              <div class="text-input-div" contenteditable="true" data-placeholder="캐릭터 A 설명..."></div>
             </div>
           </div>
         </div>
@@ -361,13 +373,11 @@
       <!-- 우측 캐릭터 B -->
       <div class="char-column">
         <div class="top-duo">
-          <!-- SD 전신 B (3:4) -->
           <div class="img-slot sd-slot" style="flex: 1;">
             <span class="placeholder-text">SD 전신 B (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="SD 전신 B">
           </div>
-          <!-- 눈 B + 두상 B 세로 배치 영역 -->
           <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
             <div class="img-slot eye-slot">
               <span class="placeholder-text">눈 B</span>
@@ -392,10 +402,10 @@
             <div class="img-slot signature-slot">
               <span class="placeholder-text">기타 B</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 B">
+              <img src="" alt="기타 이미지 B">
             </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 B 설명..." style="text-align: right;"></textarea>
+              <div class="text-input-div" contenteditable="true" data-placeholder="캐릭터 B 설명..." style="text-align: right;"></div>
             </div>
           </div>
           <div class="img-slot ld-slot">
@@ -451,10 +461,8 @@
           const img = slot.querySelector('img');
 
           img.onload = function() {
-            // 슬롯 실제 해상도 크기 측정
             const slotRect = slot.getBoundingClientRect();
             
-            // 모바일 스케일링 영향을 받지 않도록 스케일 보정값 계산
             const transformScale = canvasArea.style.transform.match(/scale\(([^)]+)\)/);
             const scaleFactor = transformScale ? parseFloat(transformScale[1]) : 1;
             
@@ -464,7 +472,6 @@
             const imgWidth = img.naturalWidth;
             const imgHeight = img.naturalHeight;
 
-            // 원본이 슬롯에 쏙 들어오는 Fit Scale 계산 (전체 보여주기)
             const fitScale = Math.min(slotWidth / imgWidth, slotHeight / imgHeight);
 
             img.style.width = `${imgWidth}px`;
@@ -472,7 +479,7 @@
 
             img.dataset.x = 0;
             img.dataset.y = 0;
-            img.dataset.scale = fitScale; // 자동 맞춤 스케일 적용
+            img.dataset.scale = fitScale;
 
             updateTransform(img);
             slot.classList.add('has-image');
@@ -484,7 +491,7 @@
       }
     }
 
-    // 드래그 & 확대/축소 (마우스 휠 & 핀치 투 줌)
+    // 드래그 & 확대/축소
     document.querySelectorAll('.img-slot').forEach(slot => {
       const input = slot.querySelector('input[type="file"]');
       const img = slot.querySelector('img');
@@ -496,7 +503,6 @@
       let initialPinchDist = 0;
       let initialScale = 1;
 
-      // 클릭 시 업로드 / 더블클릭 시 교체
       slot.addEventListener('click', () => {
         if (!slot.classList.contains('has-image')) input.click();
       });
@@ -505,20 +511,18 @@
         if (slot.classList.contains('has-image')) input.click();
       });
 
-      // 마우스 휠 확대/축소 (0.05배 ~ 10배 허용)
       slot.addEventListener('wheel', (e) => {
         if (!slot.classList.contains('has-image')) return;
         e.preventDefault();
 
         let scale = parseFloat(img.dataset.scale || 1);
-        const zoomDelta = e.deltaY < 0 ? 1.08 : 0.92; // 비율 단위 축소/확대
+        const zoomDelta = e.deltaY < 0 ? 1.08 : 0.92;
         scale = Math.min(Math.max(0.05, scale * zoomDelta), 10);
 
         img.dataset.scale = scale;
         updateTransform(img);
       }, { passive: false });
 
-      // 드래그 로직
       const startDrag = (clientX, clientY) => {
         if (!slot.classList.contains('has-image')) return;
         isDragging = true;
@@ -543,14 +547,12 @@
 
       const endDrag = () => { isDragging = false; };
 
-      // 마우스 event
       slot.addEventListener('mousedown', (e) => {
         if (e.button === 0) startDrag(e.clientX, e.clientY);
       });
       window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
       window.addEventListener('mouseup', endDrag);
 
-      // 터치 event (핀치 투 줌 & 더블 탭)
       slot.addEventListener('touchstart', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTapTime;
