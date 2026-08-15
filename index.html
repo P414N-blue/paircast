@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데코라 스타일 페어틀 편집기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Single+Day&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #fff0f5;
+            --main-pink: #ff7ebb;
+            --main-yellow: #ffee55;
+            --main-blue: #64d2ff;
+            --main-purple: #c084fc;
+            --border-color: #ff3388;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Gaegu', 'Single Day', cursive, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            display: flex;
+            gap: 20px;
+            color: #333;
+        }
+
+        /* 컨트롤 패널 (좌측 설정창) */
+        #control-panel {
+            width: 360px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid var(--main-pink);
+            box-shadow: 5px 5px 0px var(--main-purple);
+            max-height: 95vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        #control-panel h2 {
+            margin-top: 0;
+            color: var(--border-color);
+            text-align: center;
+            font-size: 28px;
+            text-shadow: 2px 2px 0px var(--main-yellow);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            background: var(--main-yellow);
+            padding: 5px 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            display: inline-block;
+            border: 2px solid var(--border-color);
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group textarea {
+            padding: 8px;
+            border: 2px solid var(--main-pink);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            height: 60px;
+        }
+
+        button.download-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--main-pink);
+            color: white;
+            border: 3px solid #ffffff;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0px 4px 0px var(--border-color);
+            transition: transform 0.1s;
+        }
+
+        button.download-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* 프리뷰 영역 (페어틀 실물) */
+        #preview-wrapper {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: auto;
+        }
+
+        #pair-frame {
+            width: 1100px;
+            min-width: 1100px;
+            height: 620px;
+            background: #fffdfa;
+            border: 8px dashed var(--main-pink);
+            border-radius: 30px;
+            padding: 20px;
+            position: relative;
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(255, 126, 187, 0.3);
+            background-image: 
+                radial-gradient(circle at 10px 10px, #ffe4e1 2px, transparent 0);
+            background-size: 20px 20px;
+        }
+
+        /* 캐릭터 사이드 컬럼 */
+        .char-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 3px solid var(--main-blue);
+            border-radius: 20px;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* 이미지 박스 공통 */
+        .img-box {
+            background: #f0f0f0;
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .img-box span {
+            font-size: 14px;
+            color: #888;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 슬롯별 이미지 사이즈 */
+        .box-head {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 4px solid var(--main-yellow);
+        }
+
+        .box-body {
+            width: 100%;
+            height: 220px;
+            border: 3px solid var(--main-pink);
+        }
+
+        .box-sd {
+            width: 100px;
+            height: 100px;
+            border: 3px solid var(--main-purple);
+            border-radius: 20px;
+        }
+
+        .box-main {
+            width: 100%;
+            height: 320px;
+            border: 5px solid var(--main-pink);
+            border-radius: 20px;
+            box-shadow: 4px 4px 0px var(--main-yellow);
+        }
+
+        /* 캐릭터 정보 텍스트 */
+        .char-info {
+            width: 100%;
+            font-size: 15px;
+            line-height: 1.3;
+        }
+
+        .char-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--border-color);
+            text-align: center;
+            margin-bottom: 4px;
+            background: var(--main-yellow);
+            border-radius: 10px;
+            padding: 2px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #ff0066;
+        }
+
+        /* 중앙 페어 컬럼 */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pair-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff007f;
+            text-shadow: 3px 3px 0px var(--main-yellow), 5px 5px 0px var(--main-blue);
+            margin: 0;
+            text-align: center;
+        }
+
+        .narrative-box {
+            width: 100%;
+            background: #ffffff;
+            border: 3px solid var(--main-purple);
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-size: 16px;
+            min-height: 100px;
+            box-shadow: 3px 3px 0px var(--main-blue);
+        }
+
+        .narrative-title {
+            font-weight: bold;
+            color: var(--main-purple);
+            margin-bottom: 5px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        /* 데코 스티커 장식 */
+        .sticker {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 편집 컨트롤 패널 -->
+    <div id="control-panel">
+        <h2>🎀 데코라 페어틀 🎀</h2>
+        
+        <div class="section-title">메인 설정</div>
+        <div class="input-group">
+            <label>페어 제목</label>
+            <input type="text" id="in-title" value="💖 OUR SPECIAL STORY 💖" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>페어 서사 요약</label>
+            <textarea id="in-narrative" oninput="syncText()">운명처럼 만난 두 사람의 키치하고 알록달록한 우정 & 사랑 이야기! 여기에 간단한 서사를 적어주세요.</textarea>
+        </div>
+
+        <div class="section-title">왼쪽 캐릭터 (A)</div>
+        <div class="input-group">
+            <label>이름 / 칭호</label>
+            <input type="text" id="in-a-name" value="캐릭터 A" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>성격 키워드</label>
+            <input type="text" id="in-a-kw" value="당당함 / 열정적 / 명랑" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>설정</label>
+            <input type="text" id="in-a-setting" value="햇살 같은 분위기의 소년" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>테마곡</label>
+            <input type="text" id="in-a-song" value="Bright Sunshine - Artist" oninput="syncText()">
+        </div>
+
+        <div class="section-title">오른쪽 캐릭터 (B)</div>
+        <div class="input-group">
+            <label>이름 / 칭호</label>
+            <input type="text" id="in-b-name" value="캐릭터 B" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>성격 키워드</label>
+            <input type="text" id="in-b-kw" value="차분함 / 신중함 / 다정" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>설정</label>
+            <input type="text" id="in-b-setting" value="달빛을 닮은 신비로운 소녀" oninput="syncText()">
+        </div>
+        <div class="input-group">
+            <label>테마곡</label>
+            <input type="text" id="in-b-song" value="Moonlight Sonata - Artist" oninput="syncText()">
+        </div>
+
+        <button class="download-btn" onclick="downloadImage()">📸 PNG로 저장하기</button>
+    </div>
+
+    <!-- 페어틀 이미지 출력 영역 -->
+    <div id="preview-wrapper">
+        <div id="pair-frame">
+            <!-- 데코 스티커 장식들 -->
+            <div class="sticker" style="top: -15px; left: -15px;">🎀</div>
+            <div class="sticker" style="top: -15px; right: -15px;">🎀</div>
+            <div class="sticker" style="bottom: -15px; left: -15px;">✨</div>
+            <div class="sticker" style="bottom: -15px; right: -15px;">✨</div>
+
+            <!-- 왼쪽 캐릭터 -->
+            <div class="char-column">
+                <div class="img-box box-head" onclick="triggerUpload('img-a-head')">
+                    <span id="label-a-head">두상 클릭</span>
+                    <img id="img-a-head" style="display:none;">
+                </div>
+                
+                <div class="img-box box-body" onclick="triggerUpload('img-a-body')">
+                    <span id="label-a-body">전신 이미지 클릭하여 업로드</span>
+                    <img id="img-a-body" style="display:none;">
+                </div>
+
+                <div class="char-info">
+                    <div class="char-name" id="out-a-name">캐릭터 A</div>
+                    <div><span class="info-label">성격:</span> <span id="out-a-kw">당당함 / 열정적 / 명랑</span></div>
+                    <div><span class="info-label">설정:</span> <span id="out-a-setting">햇살 같은 분위기의 소년</span></div>
+                    <div><span class="info-label">🎵</span> <span id="out-a-song">Bright Sunshine - Artist</span></div>
+                </div>
+
+                <div class="img-box box-sd" onclick="triggerUpload('img-a-sd')">
+                    <span id="label-a-sd">SD 클릭</span>
+                    <img id="img-a-sd" style="display:none;">
+                </div>
+            </div>
+
+            <!-- 중앙 메인 -->
+            <div class="center-column">
+                <h1 class="pair-title" id="out-title">💖 OUR SPECIAL STORY 💖</h1>
+                
+                <div class="img-box box-main" onclick="triggerUpload('img-main')">
+                    <span id="label-main">💕 메인 일러스트 클릭하여 업로드 💕</span>
+                    <img id="img-main" style="display:none;">
+                </div>
+
+                <div class="narrative-box">
+                    <div class="narrative-title">✨ STORY SUMMARY ✨</div>
+                    <div id="out-narrative">운명처럼 만난 두 사람의 키치하고 알록달록한 우정 & 사랑 이야기! 여기에 간단한 서사를 적어주세요.</div>
+                </div>
+            </div>
+
+            <!-- 오른쪽 캐릭터 -->
+            <div class="char-column">
+                <div class="img-box box-head" onclick="triggerUpload('img-b-head')">
+                    <span id="label-b-head">두상 클릭</span>
+                    <img id="img-b-head" style="display:none;">
+                </div>
+                
+                <div class="img-box box-body" onclick="triggerUpload('img-b-body')">
+                    <span id="label-b-body">전신 이미지 클릭하여 업로드</span>
+                    <img id="img-b-body" style="display:none;">
+                </div>
+
+                <div class="char-info">
+                    <div class="char-name" id="out-b-name">캐릭터 B</div>
+                    <div><span class="info-label">성격:</span> <span id="out-b-kw">차분함 / 신중함 / 다정</span></div>
+                    <div><span class="info-label">설정:</span> <span id="out-b-setting">달빛을 닮은 신비로운 소녀</span></div>
+                    <div><span class="info-label">🎵</span> <span id="out-b-song">Moonlight Sonata - Artist</span></div>
+                </div>
+
+                <div class="img-box box-sd" onclick="triggerUpload('img-b-sd')">
+                    <span id="label-b-sd">SD 클릭</span>
+                    <img id="img-b-sd" style="display:none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 숨겨진 이미지 파일 업로드 태그 -->
+    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+
+    <script>
+        let currentTargetImgId = null;
+
+        // 텍스트 동기화
+        function syncText() {
+            document.getElementById('out-title').innerText = document.getElementById('in-title').value;
+            document.getElementById('out-narrative').innerText = document.getElementById('in-narrative').value;
+
+            document.getElementById('out-a-name').innerText = document.getElementById('in-a-name').value;
+            document.getElementById('out-a-kw').innerText = document.getElementById('in-a-kw').value;
+            document.getElementById('out-a-setting').innerText = document.getElementById('in-a-setting').value;
+            document.getElementById('out-a-song').innerText = document.getElementById('in-a-song').value;
+
+            document.getElementById('out-b-name').innerText = document.getElementById('in-b-name').value;
+            document.getElementById('out-b-kw').innerText = document.getElementById('in-b-kw').value;
+            document.getElementById('out-b-setting').innerText = document.getElementById('in-b-setting').value;
+            document.getElementById('out-b-song').innerText = document.getElementById('in-b-song').value;
+        }
+
+        // 이미지 클릭 시 파일 창 열기
+        function triggerUpload(imgId) {
+            currentTargetImgId = imgId;
+            document.getElementById('file-input').click();
+        }
+
+        // 이미지 파일 반영
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file && currentTargetImgId) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgEl = document.getElementById(currentTargetImgId);
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block';
+
+                    // 라벨 텍스트 숨기기
+                    const labelId = currentTargetImgId.replace('img-', 'label-');
+                    const labelEl = document.getElementById(labelId);
+                    if(labelEl) labelEl.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+            event.target.value = ''; // 동일 파일 재업로드 지원
+        }
+
+        // PNG 다운로드
+        function downloadImage() {
+            const frame = document.getElementById('pair-frame');
+            html2canvas(frame, {
+                scale: 2, // 고해상도 출력
+                backgroundColor: null
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'decora_pair_template.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
