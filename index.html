@@ -131,7 +131,7 @@
       align-items: center;
       justify-content: center;
       transition: border-color 0.2s ease;
-      touch-action: none; /* 화면 스크롤 방지 */
+      touch-action: none; /* 스크롤 방지 */
     }
 
     .img-slot:hover {
@@ -146,12 +146,11 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      min-width: 100%;
-      min-height: 100%;
-      object-fit: cover;
       display: none;
       transform: translate(-50%, -50%) scale(1);
       cursor: grab;
+      max-width: none;
+      max-height: none;
     }
 
     .img-slot img:active {
@@ -182,7 +181,7 @@
       display: none;
     }
 
-    /* 지정 비율 */
+    /* 지정 비율 및 형태 */
     .eye-slot {
       width: 100%;
       aspect-ratio: 3.2 / 1; /* 눈 서브 슬롯 */
@@ -236,10 +235,6 @@
     .signature-slot {
       height: 55px;
       background-color: rgba(255, 255, 255, 0.6);
-    }
-
-    .signature-slot img {
-      object-fit: contain !important;
     }
 
     .text-area-box {
@@ -338,9 +333,9 @@
               <img src="" alt="동물화 A">
             </div>
             <div class="img-slot signature-slot">
-              <span class="placeholder-text">기타 A</span>
+              <span class="placeholder-text">서명/로고 A</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 이미지 A">
+              <img src="" alt="서명 이미지 A">
             </div>
             <div class="text-area-box">
               <textarea placeholder="캐릭터 A 설명..."></textarea>
@@ -395,9 +390,9 @@
               <img src="" alt="동물화 B">
             </div>
             <div class="img-slot signature-slot">
-              <span class="placeholder-text">기타 B</span>
+              <span class="placeholder-text">서명/로고 B</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 이미지 B">
+              <img src="" alt="서명 이미지 B">
             </div>
             <div class="text-area-box">
               <textarea placeholder="캐릭터 B 설명..." style="text-align: right;"></textarea>
@@ -446,7 +441,7 @@
       img.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
     }
 
-    // 이미지 파일 로드
+    // 이미지 파일 로드 및 자동 맞춤(Auto-Fit)
     function loadImage(event, input) {
       const file = event.target.files[0];
       if (file) {
@@ -454,12 +449,36 @@
         reader.onload = function(e) {
           const slot = input.closest('.img-slot');
           const img = slot.querySelector('img');
+
+          img.onload = function() {
+            // 슬롯 실제 해상도 크기 측정
+            const slotRect = slot.getBoundingClientRect();
+            
+            // 모바일 스케일링 영향을 받지 않도록 스케일 보정값 계산
+            const transformScale = canvasArea.style.transform.match(/scale\(([^)]+)\)/);
+            const scaleFactor = transformScale ? parseFloat(transformScale[1]) : 1;
+            
+            const slotWidth = slotRect.width / scaleFactor;
+            const slotHeight = slotRect.height / scaleFactor;
+
+            const imgWidth = img.naturalWidth;
+            const imgHeight = img.naturalHeight;
+
+            // 원본이 슬롯에 쏙 들어오는 Fit Scale 계산 (전체 보여주기)
+            const fitScale = Math.min(slotWidth / imgWidth, slotHeight / imgHeight);
+
+            img.style.width = `${imgWidth}px`;
+            img.style.height = `${imgHeight}px`;
+
+            img.dataset.x = 0;
+            img.dataset.y = 0;
+            img.dataset.scale = fitScale; // 자동 맞춤 스케일 적용
+
+            updateTransform(img);
+            slot.classList.add('has-image');
+          };
+
           img.src = e.target.result;
-          img.dataset.x = 0;
-          img.dataset.y = 0;
-          img.dataset.scale = 1;
-          updateTransform(img);
-          slot.classList.add('has-image');
         };
         reader.readAsDataURL(file);
       }
@@ -477,7 +496,7 @@
       let initialPinchDist = 0;
       let initialScale = 1;
 
-      // 이미지 선택/더블클릭 교체
+      // 클릭 시 업로드 / 더블클릭 시 교체
       slot.addEventListener('click', () => {
         if (!slot.classList.contains('has-image')) input.click();
       });
@@ -486,14 +505,14 @@
         if (slot.classList.contains('has-image')) input.click();
       });
 
-      // 마우스 휠 확대/축소
+      // 마우스 휠 확대/축소 (0.05배 ~ 10배 허용)
       slot.addEventListener('wheel', (e) => {
         if (!slot.classList.contains('has-image')) return;
         e.preventDefault();
 
         let scale = parseFloat(img.dataset.scale || 1);
-        const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
-        scale = Math.min(Math.max(0.2, scale + zoomDelta), 5); // 0.2배 ~ 5배 제한
+        const zoomDelta = e.deltaY < 0 ? 1.08 : 0.92; // 비율 단위 축소/확대
+        scale = Math.min(Math.max(0.05, scale * zoomDelta), 10);
 
         img.dataset.scale = scale;
         updateTransform(img);
@@ -524,19 +543,18 @@
 
       const endDrag = () => { isDragging = false; };
 
-      // 마우스 drag
+      // 마우스 event
       slot.addEventListener('mousedown', (e) => {
         if (e.button === 0) startDrag(e.clientX, e.clientY);
       });
       window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
       window.addEventListener('mouseup', endDrag);
 
-      // 터치 이벤트 (드래그 & 핀치 투 줌 & 더블 탭)
+      // 터치 event (핀치 투 줌 & 더블 탭)
       slot.addEventListener('touchstart', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTapTime;
 
-        // 모바일 더블 탭으로 이미지 변경
         if (slot.classList.contains('has-image') && tapLength < 300 && tapLength > 0) {
           input.click();
           e.preventDefault();
@@ -548,7 +566,6 @@
         if (e.touches.length === 1) {
           startDrag(e.touches[0].clientX, e.touches[0].clientY);
         } else if (e.touches.length === 2) {
-          // 두 손가락 핀치 투 줌 시작
           isDragging = false;
           initialPinchDist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
@@ -563,14 +580,13 @@
         if (!slot.classList.contains('has-image')) return;
 
         if (e.touches.length === 2 && initialPinchDist > 0) {
-          // 핀치 확대/축소 진행
           e.preventDefault();
           const currentDist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
           );
           const pinchScale = currentDist / initialPinchDist;
-          let newScale = Math.min(Math.max(0.2, initialScale * pinchScale), 5);
+          let newScale = Math.min(Math.max(0.05, initialScale * pinchScale), 10);
 
           img.dataset.scale = newScale;
           updateTransform(img);
@@ -585,7 +601,7 @@
       });
     });
 
-    // 배경 색상 / 이미지 / 블러
+    // 배경 설정
     function changeBgColor(color) { bgLayer.style.backgroundColor = color; }
 
     function uploadBgImage(event) {
@@ -614,7 +630,7 @@
         canvasArea.style.transform = currentTransform;
 
         const link = document.createElement('a');
-        link.download = 'palan_paircast.png';
+        link.download = 'palan_blue.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
       }).catch(err => {
