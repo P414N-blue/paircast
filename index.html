@@ -89,11 +89,11 @@
     /* 메인 페어틀 프레임 */
     #frame-canvas {
       width: 1400px;
-      height: 740px;
+      height: 760px;
       background-color: #ffffff;
       padding: 24px;
       display: grid;
-      grid-template-columns: 400px 1fr 400px;
+      grid-template-columns: 410px 1fr 410px;
       gap: 20px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       position: relative;
@@ -131,7 +131,7 @@
       align-items: center;
       justify-content: center;
       transition: border-color 0.2s ease;
-      touch-action: none; /* 드래그 시 스크롤 방지 */
+      touch-action: none; /* 화면 스크롤 방지 */
     }
 
     .img-slot:hover {
@@ -150,7 +150,7 @@
       min-height: 100%;
       object-fit: cover;
       display: none;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(1);
       cursor: grab;
     }
 
@@ -182,7 +182,12 @@
       display: none;
     }
 
-    /* 지정 비율 적용 */
+    /* 지정 비율 */
+    .eye-slot {
+      width: 100%;
+      aspect-ratio: 3.2 / 1; /* 눈 서브 슬롯 */
+    }
+
     .head-slot {
       aspect-ratio: 1 / 1; /* 두상 1:1 */
     }
@@ -299,14 +304,21 @@
       <!-- 좌측 캐릭터 A -->
       <div class="char-column">
         <div class="top-duo">
-          <!-- 두상 A (1:1) -->
-          <div class="img-slot head-slot">
-            <span class="placeholder-text">두상 A (1:1)</span>
-            <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="두상 A">
+          <!-- 눈 A + 두상 A 세로 배치 영역 -->
+          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+            <div class="img-slot eye-slot">
+              <span class="placeholder-text">눈 A</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="눈 A">
+            </div>
+            <div class="img-slot head-slot">
+              <span class="placeholder-text">두상 A (1:1)</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="두상 A">
+            </div>
           </div>
           <!-- SD 전신 A (3:4) -->
-          <div class="img-slot sd-slot">
+          <div class="img-slot sd-slot" style="flex: 1;">
             <span class="placeholder-text">SD 전신 A (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="SD 전신 A">
@@ -320,19 +332,18 @@
             <img src="" alt="LD 전신 A">
           </div>
           <div class="side-sub-box">
-            <!-- 동물화 A (9:7) -->
             <div class="img-slot animal-slot">
               <span class="placeholder-text">동물화 A (9:7)</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="동물화 A">
             </div>
             <div class="img-slot signature-slot">
-              <span class="placeholder-text">기타 A</span>
+              <span class="placeholder-text">서명/로고 A</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 이미지 A">
+              <img src="" alt="서명 이미지 A">
             </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 A 설명"></textarea>
+              <textarea placeholder="캐릭터 A 설명..."></textarea>
             </div>
           </div>
         </div>
@@ -356,34 +367,40 @@
       <div class="char-column">
         <div class="top-duo">
           <!-- SD 전신 B (3:4) -->
-          <div class="img-slot sd-slot">
+          <div class="img-slot sd-slot" style="flex: 1;">
             <span class="placeholder-text">SD 전신 B (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="SD 전신 B">
           </div>
-          <!-- 두상 B (1:1) -->
-          <div class="img-slot head-slot">
-            <span class="placeholder-text">두상 B (1:1)</span>
-            <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="두상 B">
+          <!-- 눈 B + 두상 B 세로 배치 영역 -->
+          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+            <div class="img-slot eye-slot">
+              <span class="placeholder-text">눈 B</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="눈 B">
+            </div>
+            <div class="img-slot head-slot">
+              <span class="placeholder-text">두상 B (1:1)</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="두상 B">
+            </div>
           </div>
         </div>
 
         <div class="mid-duo">
           <div class="side-sub-box">
-            <!-- 동물화 B (9:7) -->
             <div class="img-slot animal-slot">
               <span class="placeholder-text">동물화 B (9:7)</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="동물화 B">
             </div>
             <div class="img-slot signature-slot">
-              <span class="placeholder-text">기타 B</span>
+              <span class="placeholder-text">서명/로고 B</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
-              <img src="" alt="기타 이미지 B">
+              <img src="" alt="서명 이미지 B">
             </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 B 설명" style="text-align: right;"></textarea>
+              <textarea placeholder="캐릭터 B 설명..." style="text-align: right;"></textarea>
             </div>
           </div>
           <div class="img-slot ld-slot">
@@ -402,11 +419,11 @@
     const wrapper = document.getElementById('canvas-wrapper');
     const canvasArea = document.getElementById('frame-canvas');
 
-    // 모바일 리사이즈 스케일 조정
+    // 모바일 스케일링
     function fitCanvasToScreen() {
       const wrapperWidth = wrapper.clientWidth;
       const targetWidth = 1400;
-      const targetHeight = 740;
+      const targetHeight = 760;
 
       if (wrapperWidth < targetWidth) {
         const scale = wrapperWidth / targetWidth;
@@ -421,6 +438,14 @@
     window.addEventListener('resize', fitCanvasToScreen);
     window.addEventListener('DOMContentLoaded', fitCanvasToScreen);
 
+    // 이미지 위치/크기 트랜스폼 갱신 함수
+    function updateTransform(img) {
+      const x = parseFloat(img.dataset.x || 0);
+      const y = parseFloat(img.dataset.y || 0);
+      const scale = parseFloat(img.dataset.scale || 1);
+      img.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
+    }
+
     // 이미지 파일 로드
     function loadImage(event, input) {
       const file = event.target.files[0];
@@ -432,14 +457,15 @@
           img.src = e.target.result;
           img.dataset.x = 0;
           img.dataset.y = 0;
-          img.style.transform = 'translate(-50%, -50%)';
+          img.dataset.scale = 1;
+          updateTransform(img);
           slot.classList.add('has-image');
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // 슬롯 클릭 / 더블클릭 및 마우스/터치 드래그 이벤트 연결
+    // 드래그 & 확대/축소 (마우스 휠 & 핀치 투 줌)
     document.querySelectorAll('.img-slot').forEach(slot => {
       const input = slot.querySelector('input[type="file"]');
       const img = slot.querySelector('img');
@@ -448,22 +474,32 @@
       let startX = 0, startY = 0;
       let currentX = 0, currentY = 0;
       let lastTapTime = 0;
+      let initialPinchDist = 0;
+      let initialScale = 1;
 
-      // 단일 클릭 (비어있을 때 업로드)
-      slot.addEventListener('click', (e) => {
-        if (!slot.classList.contains('has-image')) {
-          input.click();
-        }
+      // 이미지 선택/더블클릭 교체
+      slot.addEventListener('click', () => {
+        if (!slot.classList.contains('has-image')) input.click();
       });
 
-      // 더블 클릭 (이미지 있을 때 재업로드)
-      slot.addEventListener('dblclick', (e) => {
-        if (slot.classList.contains('has-image')) {
-          input.click();
-        }
+      slot.addEventListener('dblclick', () => {
+        if (slot.classList.contains('has-image')) input.click();
       });
 
-      // 드래그 시작 (Mouse & Touch)
+      // 마우스 휠 확대/축소
+      slot.addEventListener('wheel', (e) => {
+        if (!slot.classList.contains('has-image')) return;
+        e.preventDefault();
+
+        let scale = parseFloat(img.dataset.scale || 1);
+        const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
+        scale = Math.min(Math.max(0.2, scale + zoomDelta), 5); // 0.2배 ~ 5배 제한
+
+        img.dataset.scale = scale;
+        updateTransform(img);
+      }, { passive: false });
+
+      // 드래그 로직
       const startDrag = (clientX, clientY) => {
         if (!slot.classList.contains('has-image')) return;
         isDragging = true;
@@ -473,87 +509,100 @@
         currentY = parseFloat(img.dataset.y || 0);
       };
 
-      // 드래그 중 (Mouse & Touch)
       const moveDrag = (clientX, clientY) => {
         if (!isDragging) return;
-        const dx = clientX - startX;
-        const dy = clientY - startY;
-
-        // 모바일 축소 스케일 적용 감안
         const transformScale = canvasArea.style.transform.match(/scale\(([^)]+)\)/);
-        const scale = transformScale ? parseFloat(transformScale[1]) : 1;
+        const scaleFactor = transformScale ? parseFloat(transformScale[1]) : 1;
 
-        const newX = currentX + (dx / scale);
-        const newY = currentY + (dy / scale);
+        const newX = currentX + ((clientX - startX) / scaleFactor);
+        const newY = currentY + ((clientY - startY) / scaleFactor);
 
         img.dataset.x = newX;
         img.dataset.y = newY;
-        img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px))`;
+        updateTransform(img);
       };
 
-      // 드래그 종료
-      const endDrag = () => {
-        isDragging = false;
-      };
+      const endDrag = () => { isDragging = false; };
 
-      // 마우스 이벤트
+      // 마우스 drag
       slot.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        startDrag(e.clientX, e.clientY);
+        if (e.button === 0) startDrag(e.clientX, e.clientY);
       });
       window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
       window.addEventListener('mouseup', endDrag);
 
-      // 터치 이벤트 (모바일)
+      // 터치 이벤트 (드래그 & 핀치 투 줌 & 더블 탭)
       slot.addEventListener('touchstart', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTapTime;
 
-        // 모바일 더블 감지 (300ms 이내)
+        // 모바일 더블 탭으로 이미지 변경
         if (slot.classList.contains('has-image') && tapLength < 300 && tapLength > 0) {
           input.click();
           e.preventDefault();
-        } else {
-          if (e.touches.length === 1) {
-            startDrag(e.touches[0].clientX, e.touches[0].clientY);
-          }
+          return;
+        }
+
+        if (!slot.classList.contains('has-image')) return;
+
+        if (e.touches.length === 1) {
+          startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        } else if (e.touches.length === 2) {
+          // 두 손가락 핀치 투 줌 시작
+          isDragging = false;
+          initialPinchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          initialScale = parseFloat(img.dataset.scale || 1);
         }
         lastTapTime = currentTime;
       }, { passive: false });
 
       window.addEventListener('touchmove', (e) => {
-        if (isDragging && e.touches.length === 1) {
+        if (!slot.classList.contains('has-image')) return;
+
+        if (e.touches.length === 2 && initialPinchDist > 0) {
+          // 핀치 확대/축소 진행
+          e.preventDefault();
+          const currentDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const pinchScale = currentDist / initialPinchDist;
+          let newScale = Math.min(Math.max(0.2, initialScale * pinchScale), 5);
+
+          img.dataset.scale = newScale;
+          updateTransform(img);
+        } else if (isDragging && e.touches.length === 1) {
           moveDrag(e.touches[0].clientX, e.touches[0].clientY);
         }
       }, { passive: false });
 
-      window.addEventListener('touchend', endDrag);
+      window.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) initialPinchDist = 0;
+        endDrag();
+      });
     });
 
-    // 배경 색상 변경
-    function changeBgColor(color) {
-      bgLayer.style.backgroundColor = color;
-    }
+    // 배경 색상 / 이미지 / 블러
+    function changeBgColor(color) { bgLayer.style.backgroundColor = color; }
 
-    // 배경 이미지 업로드
     function uploadBgImage(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          bgLayer.style.backgroundImage = `url('${e.target.result}')`;
-        };
+        reader.onload = function(e) { bgLayer.style.backgroundImage = `url('${e.target.result}')`; };
         reader.readAsDataURL(file);
       }
     }
 
-    // 배경 블러 변경
     function changeBgBlur(val) {
       bgLayer.style.filter = `blur(${val}px)`;
       document.getElementById('blur-value-text').innerText = `${val}px`;
     }
 
-    // 이미지 저장 기능
+    // PNG 저장
     function saveAsImage() {
       const currentTransform = canvasArea.style.transform;
       canvasArea.style.transform = 'scale(1)';
