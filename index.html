@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>페어틀 메이커 (Pair Frame Maker)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>파란 페어틀 메이커</title>
   <!-- 이미지 저장 라이브러리 (html2canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -19,50 +19,52 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px;
+      padding: 16px 10px;
     }
 
-    /* 상단 컨트롤 바 */
+    /* 상단 컨트롤 바 (모바일 대응) */
     .controls {
       background-color: #ffffff;
-      padding: 14px 24px;
+      padding: 12px 16px;
       border-radius: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       display: flex;
-      gap: 20px;
+      gap: 12px;
       align-items: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       flex-wrap: wrap;
+      width: 100%;
+      max-width: 1400px;
     }
 
     .control-group {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 6px;
+      font-size: 13px;
       color: #333;
       font-weight: bold;
     }
 
     .control-group input[type="color"] {
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 6px;
       cursor: pointer;
       background: none;
     }
 
     .control-group input[type="range"] {
-      width: 100px;
+      width: 80px;
     }
 
     .btn-save {
       background-color: #1e293b;
       color: #ffffff;
       border: none;
-      padding: 10px 22px;
-      font-size: 15px;
+      padding: 10px 18px;
+      font-size: 14px;
       font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
@@ -72,6 +74,16 @@
 
     .btn-save:hover {
       background-color: #334155;
+    }
+
+    /* 모바일 반응형 스케일 래퍼 */
+    #canvas-wrapper {
+      width: 100%;
+      max-width: 1400px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: hidden;
     }
 
     /* 페어틀 전체 메인 프레임 */
@@ -85,7 +97,9 @@
       gap: 24px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       position: relative;
-      overflow: hidden; /* 배경 블러 번짐 방지 */
+      overflow: hidden;
+      flex-shrink: 0;
+      transform-origin: top center; /* 축소 시 중앙 상단 기준 기준점 설정 */
     }
 
     /* 배경 레이어 (색상/이미지/블러 전용) */
@@ -101,7 +115,7 @@
       transition: filter 0.1s ease;
     }
 
-    /* 콘텐츠 영역 (배경 위 레이어) */
+    /* 콘텐츠 영역 */
     .char-column, .center-column {
       position: relative;
       z-index: 1;
@@ -146,7 +160,6 @@
       padding: 4px;
     }
 
-    /* 이미지가 첨부되었을 때 */
     .img-slot.has-image {
       border-style: solid;
       border-color: transparent;
@@ -181,9 +194,8 @@
       height: 494px;
     }
 
-    /* LD 전신 확대 영역 */
     .ld-slot {
-      flex: 1.6; /* 기존 1.2에서 1.6으로 넓이 대폭 확장 */
+      flex: 1.6;
       height: 100%;
     }
 
@@ -198,17 +210,15 @@
       height: 140px;
     }
 
-    /* 서명/로고 이미지 슬롯 (비율 맞춰 쏙 들어가도록 contain 사용) */
     .signature-slot {
       height: 70px;
       background-color: rgba(255, 255, 255, 0.6);
     }
 
     .signature-slot img {
-      object-fit: contain !important; /* 서명 이미지는 잘리지 않고 전체 보기 */
+      object-fit: contain !important;
     }
 
-    /* 텍스트 설명 박스 */
     .text-area-box {
       display: flex;
       flex-direction: column;
@@ -235,7 +245,7 @@
       border-color: #888888;
     }
 
-    /* 중앙 컬럼 (메인 일러스트 2개) */
+    /* 중앙 컬럼 */
     .center-column {
       display: flex;
       flex-direction: column;
@@ -252,7 +262,7 @@
   <!-- 상단 컨트롤 바 -->
   <div class="controls">
     <div class="control-group">
-      <label for="bg-color-picker">🎨 배경 색상:</label>
+      <label for="bg-color-picker">🎨 배경색:</label>
       <input type="color" id="bg-color-picker" value="#ffffff" onchange="changeBgColor(this.value)">
     </div>
 
@@ -262,125 +272,141 @@
     </div>
 
     <div class="control-group">
-      <label for="bg-blur-range">💧 이미지 블러:</label>
+      <label for="bg-blur-range">💧 블러:</label>
       <input type="range" id="bg-blur-range" min="0" max="20" value="0" oninput="changeBgBlur(this.value)">
       <span id="blur-value-text" style="font-weight: normal; font-size: 12px;">0px</span>
     </div>
 
-    <button class="btn-save" onclick="saveAsImage()">📷 이미지로 저장하기</button>
+    <button class="btn-save" onclick="saveAsImage()">📷 저장하기</button>
   </div>
 
-  <!-- 페어틀 메인 캔버스 -->
-  <div id="frame-canvas">
-    <!-- 배경 설정 레이어 -->
-    <div id="bg-layer" class="bg-layer"></div>
+  <!-- 반응형 감싸기 래퍼 -->
+  <div id="canvas-wrapper">
+    <!-- 페어틀 메인 캔버스 -->
+    <div id="frame-canvas">
+      <!-- 배경 설정 레이어 -->
+      <div id="bg-layer" class="bg-layer"></div>
 
-    <!-- 좌측 캐릭터 (Character A) -->
-    <div class="char-column">
-      <!-- 상단: 두상 A / SD 전신 A -->
-      <div class="top-duo">
-        <label class="img-slot">
-          <span class="placeholder-text">두상 A</span>
-          <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="두상 A">
-        </label>
-        <label class="img-slot">
-          <span class="placeholder-text">SD 전신 A</span>
-          <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="SD 전신 A">
-        </label>
-      </div>
+      <!-- 좌측 캐릭터 (Character A) -->
+      <div class="char-column">
+        <div class="top-duo">
+          <label class="img-slot">
+            <span class="placeholder-text">두상 A</span>
+            <input type="file" accept="image/*" onchange="loadImage(event, this)">
+            <img src="" alt="두상 A">
+          </label>
+          <label class="img-slot">
+            <span class="placeholder-text">SD 전신 A</span>
+            <input type="file" accept="image/*" onchange="loadImage(event, this)">
+            <img src="" alt="SD 전신 A">
+          </label>
+        </div>
 
-      <!-- 중단: LD 전신 A + (동물화/서명/설명) -->
-      <div class="mid-duo">
-        <label class="img-slot ld-slot">
-          <span class="placeholder-text">LD 전신 A</span>
-          <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="LD 전신 A">
-        </label>
-        <div class="side-sub-box">
-          <label class="img-slot animal-slot">
-            <span class="placeholder-text">동물화 A</span>
+        <div class="mid-duo">
+          <label class="img-slot ld-slot">
+            <span class="placeholder-text">LD 전신 A</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="동물화 A">
+            <img src="" alt="LD 전신 A">
           </label>
-          <!-- 캐릭터 A 서명/로고 이미지 슬롯 -->
-          <label class="img-slot signature-slot">
-            <span class="placeholder-text">서명/로고 이미지 A</span>
-            <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="서명 이미지 A">
-          </label>
-          <!-- 캐릭터 A 설명 -->
-          <div class="text-area-box">
-            <textarea placeholder="캐릭터 A 설명을 입력하세요."></textarea>
+          <div class="side-sub-box">
+            <label class="img-slot animal-slot">
+              <span class="placeholder-text">동물화 A</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="동물화 A">
+            </label>
+            <label class="img-slot signature-slot">
+              <span class="placeholder-text">기타 A</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="기타 이미지 A">
+            </label>
+            <div class="text-area-box">
+              <textarea placeholder="캐릭터 A 설명을 입력하세요..."></textarea>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 중앙 메인 일러스트 2개 -->
-    <div class="center-column">
-      <label class="img-slot main-illust-top">
-        <span class="placeholder-text">메인 일러스트 1</span>
-        <input type="file" accept="image/*" onchange="loadImage(event, this)">
-        <img src="" alt="메인 일러스트 1">
-      </label>
-      <label class="img-slot main-illust-bottom">
-        <span class="placeholder-text">메인 일러스트 2</span>
-        <input type="file" accept="image/*" onchange="loadImage(event, this)">
-        <img src="" alt="메인 일러스트 2">
-      </label>
-    </div>
-
-    <!-- 우측 캐릭터 (Character B) -->
-    <div class="char-column">
-      <!-- 상단: SD 전신 B / 두상 B -->
-      <div class="top-duo">
-        <label class="img-slot">
-          <span class="placeholder-text">SD 전신 B</span>
+      <!-- 중앙 메인 일러스트 2개 -->
+      <div class="center-column">
+        <label class="img-slot main-illust-top">
+          <span class="placeholder-text">메인 일러스트 1</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="SD 전신 B">
+          <img src="" alt="메인 일러스트 1">
         </label>
-        <label class="img-slot">
-          <span class="placeholder-text">두상 B</span>
+        <label class="img-slot main-illust-bottom">
+          <span class="placeholder-text">메인 일러스트 2</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="두상 B">
+          <img src="" alt="메인 일러스트 2">
         </label>
       </div>
 
-      <!-- 중단: (동물화/서명/설명) + LD 전신 B -->
-      <div class="mid-duo">
-        <div class="side-sub-box">
-          <label class="img-slot animal-slot">
-            <span class="placeholder-text">동물화 B</span>
+      <!-- 우측 캐릭터 (Character B) -->
+      <div class="char-column">
+        <div class="top-duo">
+          <label class="img-slot">
+            <span class="placeholder-text">SD 전신 B</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="동물화 B">
+            <img src="" alt="SD 전신 B">
           </label>
-          <!-- 캐릭터 B 서명/로고 이미지 슬롯 -->
-          <label class="img-slot signature-slot">
-            <span class="placeholder-text">서명/로고 이미지 B</span>
+          <label class="img-slot">
+            <span class="placeholder-text">두상 B</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
-            <img src="" alt="서명 이미지 B">
+            <img src="" alt="두상 B">
           </label>
-          <!-- 캐릭터 B 설명 -->
-          <div class="text-area-box">
-            <textarea placeholder="캐릭터 B 설명을 입력하세요." style="text-align: right;"></textarea>
-          </div>
         </div>
-        <label class="img-slot ld-slot">
-          <span class="placeholder-text">LD 전신 B </span>
-          <input type="file" accept="image/*" onchange="loadImage(event, this)">
-          <img src="" alt="LD 전신 B">
-        </label>
-      </div>
-    </div>
 
+        <div class="mid-duo">
+          <div class="side-sub-box">
+            <label class="img-slot animal-slot">
+              <span class="placeholder-text">동물화 B</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="동물화 B">
+            </label>
+            <label class="img-slot signature-slot">
+              <span class="placeholder-text">기타 B</span>
+              <input type="file" accept="image/*" onchange="loadImage(event, this)">
+              <img src="" alt="기타 이미지 B">
+            </label>
+            <div class="text-area-box">
+              <textarea placeholder="캐릭터 B 설명을 입력하세요..." style="text-align: right;"></textarea>
+            </div>
+          </div>
+          <label class="img-slot ld-slot">
+            <span class="placeholder-text">LD 전신 B</span>
+            <input type="file" accept="image/*" onchange="loadImage(event, this)">
+            <img src="" alt="LD 전신 B">
+          </label>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
     const bgLayer = document.getElementById('bg-layer');
+    const wrapper = document.getElementById('canvas-wrapper');
+    const canvasArea = document.getElementById('frame-canvas');
 
-    // 1. 이미지 슬롯 미리보기 함수
+    // 모바일/화면 크기 리사이즈 대응 스케일링 함수
+    function fitCanvasToScreen() {
+      const wrapperWidth = wrapper.clientWidth;
+      const targetWidth = 1400;
+      const targetHeight = 720;
+
+      if (wrapperWidth < targetWidth) {
+        const scale = wrapperWidth / targetWidth;
+        canvasArea.style.transform = `scale(${scale})`;
+        wrapper.style.height = `${targetHeight * scale}px`;
+      } else {
+        canvasArea.style.transform = 'scale(1)';
+        wrapper.style.height = 'auto';
+      }
+    }
+
+    window.addEventListener('resize', fitCanvasToScreen);
+    window.addEventListener('DOMContentLoaded', fitCanvasToScreen);
+
+    // 1. 이미지 슬롯 미리보기
     function loadImage(event, input) {
       const file = event.target.files[0];
       if (file) {
@@ -412,24 +438,32 @@
       }
     }
 
-    // 4. 배경 이미지 블러 조절
+    // 4. 배경 블러 조절
     function changeBgBlur(val) {
       bgLayer.style.filter = `blur(${val}px)`;
       document.getElementById('blur-value-text').innerText = `${val}px`;
     }
 
-    // 5. 이미지 저장 함수
+    // 5. 이미지 저장 (모바일 스케일 초기화 후 고화질 저장)
     function saveAsImage() {
-      const canvasArea = document.getElementById('frame-canvas');
+      // 캡처 중 비율 변형 방지를 위해 원본 비율 스케일로 잠시 복구
+      const currentTransform = canvasArea.style.transform;
+      canvasArea.style.transform = 'scale(1)';
 
       html2canvas(canvasArea, {
-        scale: 2, // 고해상도 품질
+        scale: 2,
         useCORS: true
       }).then(canvas => {
+        // 캡처 후 기존 화면에 맞춘 스케일 상태로 재복구
+        canvasArea.style.transform = currentTransform;
+
         const link = document.createElement('a');
         link.download = 'pair_frame_custom.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
+      }).catch(err => {
+        canvasArea.style.transform = currentTransform;
+        alert('이미지 저장 중 오류가 발생했습니다.');
       });
     }
   </script>
