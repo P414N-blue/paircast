@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>파란 페어틀 메이커</title>
-  <!-- 이미지 저장 라이브러리 (html2canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * {
@@ -20,9 +19,10 @@
       flex-direction: column;
       align-items: center;
       padding: 16px 10px;
+      user-select: none;
     }
 
-    /* 상단 컨트롤 바 (모바일 대응) */
+    /* 상단 컨트롤 바 */
     .controls {
       background-color: #ffffff;
       padding: 12px 16px;
@@ -76,7 +76,7 @@
       background-color: #334155;
     }
 
-    /* 모바일 반응형 스케일 래퍼 */
+    /* 모바일 스케일 래퍼 */
     #canvas-wrapper {
       width: 100%;
       max-width: 1400px;
@@ -86,23 +86,22 @@
       overflow: hidden;
     }
 
-    /* 페어틀 전체 메인 프레임 */
+    /* 메인 페어틀 프레임 */
     #frame-canvas {
       width: 1400px;
-      height: 720px;
+      height: 740px;
       background-color: #ffffff;
-      padding: 30px;
+      padding: 24px;
       display: grid;
-      grid-template-columns: 380px 1fr 380px;
-      gap: 24px;
+      grid-template-columns: 400px 1fr 400px;
+      gap: 20px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       position: relative;
       overflow: hidden;
       flex-shrink: 0;
-      transform-origin: top center; /* 축소 시 중앙 상단 기준 기준점 설정 */
+      transform-origin: top center;
     }
 
-    /* 배경 레이어 (색상/이미지/블러 전용) */
     .bg-layer {
       position: absolute;
       top: 0;
@@ -115,13 +114,12 @@
       transition: filter 0.1s ease;
     }
 
-    /* 콘텐츠 영역 */
     .char-column, .center-column {
       position: relative;
       z-index: 1;
     }
 
-    /* 이미지 업로드 공통 슬롯 */
+    /* 이미지 슬롯 공통 */
     .img-slot {
       background-color: rgba(247, 247, 249, 0.85);
       border: 1px dashed #b0b0b0;
@@ -132,12 +130,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: border-color 0.2s ease;
+      touch-action: none; /* 드래그 시 스크롤 방지 */
     }
 
     .img-slot:hover {
       border-color: #555555;
-      background-color: rgba(238, 238, 242, 0.95);
     }
 
     .img-slot input[type="file"] {
@@ -145,24 +143,34 @@
     }
 
     .img-slot img {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
       object-fit: cover;
       display: none;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+    }
+
+    .img-slot img:active {
+      cursor: grabbing;
     }
 
     .img-slot .placeholder-text {
       color: #666666;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       pointer-events: none;
       text-align: center;
       padding: 4px;
+      z-index: 2;
     }
 
     .img-slot.has-image {
       border-style: solid;
-      border-color: transparent;
+      border-color: rgba(0,0,0,0.1);
       background-color: transparent;
     }
 
@@ -174,44 +182,54 @@
       display: none;
     }
 
-    /* 좌/우 캐릭터 컬럼 레이아웃 */
+    /* 지정 비율 적용 */
+    .head-slot {
+      aspect-ratio: 1 / 1; /* 두상 1:1 */
+    }
+
+    .sd-slot {
+      aspect-ratio: 3 / 4; /* SD 전신 3:4 */
+    }
+
+    .animal-slot {
+      aspect-ratio: 9 / 7; /* 동물화 9:7 */
+      width: 100%;
+    }
+
+    /* 캐릭터 컬럼 레이아웃 */
     .char-column {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .top-duo {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      height: 150px;
+      align-items: flex-end;
     }
 
     .mid-duo {
       display: flex;
-      gap: 14px;
-      height: 494px;
+      gap: 12px;
+      flex: 1;
     }
 
     .ld-slot {
-      flex: 1.6;
+      flex: 1.5;
       height: 100%;
     }
 
     .side-sub-box {
       display: flex;
       flex-direction: column;
-      flex: 1;
-      gap: 12px;
-    }
-
-    .animal-slot {
-      height: 140px;
+      flex: 1.1;
+      gap: 10px;
     }
 
     .signature-slot {
-      height: 70px;
+      height: 55px;
       background-color: rgba(255, 255, 255, 0.6);
     }
 
@@ -226,30 +244,25 @@
     }
 
     .text-area-box textarea {
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.12);
       border-radius: 6px;
       outline: none;
       resize: none;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 10px;
-      font-size: 13px;
-      line-height: 1.6;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 8px;
+      font-size: 12px;
+      line-height: 1.5;
       color: #222222;
       width: 100%;
       height: 100%;
       backdrop-filter: blur(2px);
     }
 
-    .text-area-box textarea:focus {
-      background: rgba(255, 255, 255, 0.95);
-      border-color: #888888;
-    }
-
-    /* 중앙 컬럼 */
+    /* 중앙 일러스트 컬럼 */
     .center-column {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
 
     .main-illust-top, .main-illust-bottom {
@@ -259,7 +272,6 @@
 </head>
 <body>
 
-  <!-- 상단 컨트롤 바 -->
   <div class="controls">
     <div class="control-group">
       <label for="bg-color-picker">🎨 배경색:</label>
@@ -280,102 +292,105 @@
     <button class="btn-save" onclick="saveAsImage()">📷 저장하기</button>
   </div>
 
-  <!-- 반응형 감싸기 래퍼 -->
   <div id="canvas-wrapper">
-    <!-- 페어틀 메인 캔버스 -->
     <div id="frame-canvas">
-      <!-- 배경 설정 레이어 -->
       <div id="bg-layer" class="bg-layer"></div>
 
-      <!-- 좌측 캐릭터 (Character A) -->
+      <!-- 좌측 캐릭터 A -->
       <div class="char-column">
         <div class="top-duo">
-          <label class="img-slot">
-            <span class="placeholder-text">두상 A</span>
+          <!-- 두상 A (1:1) -->
+          <div class="img-slot head-slot">
+            <span class="placeholder-text">두상 A (1:1)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="두상 A">
-          </label>
-          <label class="img-slot">
-            <span class="placeholder-text">SD 전신 A</span>
+          </div>
+          <!-- SD 전신 A (3:4) -->
+          <div class="img-slot sd-slot">
+            <span class="placeholder-text">SD 전신 A (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="SD 전신 A">
-          </label>
+          </div>
         </div>
 
         <div class="mid-duo">
-          <label class="img-slot ld-slot">
+          <div class="img-slot ld-slot">
             <span class="placeholder-text">LD 전신 A</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="LD 전신 A">
-          </label>
+          </div>
           <div class="side-sub-box">
-            <label class="img-slot animal-slot">
-              <span class="placeholder-text">동물화 A</span>
+            <!-- 동물화 A (9:7) -->
+            <div class="img-slot animal-slot">
+              <span class="placeholder-text">동물화 A (9:7)</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="동물화 A">
-            </label>
-            <label class="img-slot signature-slot">
+            </div>
+            <div class="img-slot signature-slot">
               <span class="placeholder-text">기타 A</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="기타 이미지 A">
-            </label>
+            </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 A 설명을 입력하세요..."></textarea>
+              <textarea placeholder="캐릭터 A 설명"></textarea>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 중앙 메인 일러스트 2개 -->
+      <!-- 중앙 메인 일러스트 -->
       <div class="center-column">
-        <label class="img-slot main-illust-top">
+        <div class="img-slot main-illust-top">
           <span class="placeholder-text">메인 일러스트 1</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
           <img src="" alt="메인 일러스트 1">
-        </label>
-        <label class="img-slot main-illust-bottom">
+        </div>
+        <div class="img-slot main-illust-bottom">
           <span class="placeholder-text">메인 일러스트 2</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
           <img src="" alt="메인 일러스트 2">
-        </label>
+        </div>
       </div>
 
-      <!-- 우측 캐릭터 (Character B) -->
+      <!-- 우측 캐릭터 B -->
       <div class="char-column">
         <div class="top-duo">
-          <label class="img-slot">
-            <span class="placeholder-text">SD 전신 B</span>
+          <!-- SD 전신 B (3:4) -->
+          <div class="img-slot sd-slot">
+            <span class="placeholder-text">SD 전신 B (3:4)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="SD 전신 B">
-          </label>
-          <label class="img-slot">
-            <span class="placeholder-text">두상 B</span>
+          </div>
+          <!-- 두상 B (1:1) -->
+          <div class="img-slot head-slot">
+            <span class="placeholder-text">두상 B (1:1)</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="두상 B">
-          </label>
+          </div>
         </div>
 
         <div class="mid-duo">
           <div class="side-sub-box">
-            <label class="img-slot animal-slot">
-              <span class="placeholder-text">동물화 B</span>
+            <!-- 동물화 B (9:7) -->
+            <div class="img-slot animal-slot">
+              <span class="placeholder-text">동물화 B (9:7)</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="동물화 B">
-            </label>
-            <label class="img-slot signature-slot">
+            </div>
+            <div class="img-slot signature-slot">
               <span class="placeholder-text">기타 B</span>
               <input type="file" accept="image/*" onchange="loadImage(event, this)">
               <img src="" alt="기타 이미지 B">
-            </label>
+            </div>
             <div class="text-area-box">
-              <textarea placeholder="캐릭터 B 설명을 입력하세요..." style="text-align: right;"></textarea>
+              <textarea placeholder="캐릭터 B 설명" style="text-align: right;"></textarea>
             </div>
           </div>
-          <label class="img-slot ld-slot">
+          <div class="img-slot ld-slot">
             <span class="placeholder-text">LD 전신 B</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="LD 전신 B">
-          </label>
+          </div>
         </div>
       </div>
 
@@ -387,11 +402,11 @@
     const wrapper = document.getElementById('canvas-wrapper');
     const canvasArea = document.getElementById('frame-canvas');
 
-    // 모바일/화면 크기 리사이즈 대응 스케일링 함수
+    // 모바일 리사이즈 스케일 조정
     function fitCanvasToScreen() {
       const wrapperWidth = wrapper.clientWidth;
       const targetWidth = 1400;
-      const targetHeight = 720;
+      const targetHeight = 740;
 
       if (wrapperWidth < targetWidth) {
         const scale = wrapperWidth / targetWidth;
@@ -406,7 +421,7 @@
     window.addEventListener('resize', fitCanvasToScreen);
     window.addEventListener('DOMContentLoaded', fitCanvasToScreen);
 
-    // 1. 이미지 슬롯 미리보기
+    // 이미지 파일 로드
     function loadImage(event, input) {
       const file = event.target.files[0];
       if (file) {
@@ -415,18 +430,112 @@
           const slot = input.closest('.img-slot');
           const img = slot.querySelector('img');
           img.src = e.target.result;
+          img.dataset.x = 0;
+          img.dataset.y = 0;
+          img.style.transform = 'translate(-50%, -50%)';
           slot.classList.add('has-image');
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // 2. 배경 색상 변경
+    // 슬롯 클릭 / 더블클릭 및 마우스/터치 드래그 이벤트 연결
+    document.querySelectorAll('.img-slot').forEach(slot => {
+      const input = slot.querySelector('input[type="file"]');
+      const img = slot.querySelector('img');
+
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let currentX = 0, currentY = 0;
+      let lastTapTime = 0;
+
+      // 단일 클릭 (비어있을 때 업로드)
+      slot.addEventListener('click', (e) => {
+        if (!slot.classList.contains('has-image')) {
+          input.click();
+        }
+      });
+
+      // 더블 클릭 (이미지 있을 때 재업로드)
+      slot.addEventListener('dblclick', (e) => {
+        if (slot.classList.contains('has-image')) {
+          input.click();
+        }
+      });
+
+      // 드래그 시작 (Mouse & Touch)
+      const startDrag = (clientX, clientY) => {
+        if (!slot.classList.contains('has-image')) return;
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        currentX = parseFloat(img.dataset.x || 0);
+        currentY = parseFloat(img.dataset.y || 0);
+      };
+
+      // 드래그 중 (Mouse & Touch)
+      const moveDrag = (clientX, clientY) => {
+        if (!isDragging) return;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+
+        // 모바일 축소 스케일 적용 감안
+        const transformScale = canvasArea.style.transform.match(/scale\(([^)]+)\)/);
+        const scale = transformScale ? parseFloat(transformScale[1]) : 1;
+
+        const newX = currentX + (dx / scale);
+        const newY = currentY + (dy / scale);
+
+        img.dataset.x = newX;
+        img.dataset.y = newY;
+        img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px))`;
+      };
+
+      // 드래그 종료
+      const endDrag = () => {
+        isDragging = false;
+      };
+
+      // 마우스 이벤트
+      slot.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startDrag(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+      window.addEventListener('mouseup', endDrag);
+
+      // 터치 이벤트 (모바일)
+      slot.addEventListener('touchstart', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+
+        // 모바일 더블 감지 (300ms 이내)
+        if (slot.classList.contains('has-image') && tapLength < 300 && tapLength > 0) {
+          input.click();
+          e.preventDefault();
+        } else {
+          if (e.touches.length === 1) {
+            startDrag(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }
+        lastTapTime = currentTime;
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches.length === 1) {
+          moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchend', endDrag);
+    });
+
+    // 배경 색상 변경
     function changeBgColor(color) {
       bgLayer.style.backgroundColor = color;
     }
 
-    // 3. 배경 이미지 업로드
+    // 배경 이미지 업로드
     function uploadBgImage(event) {
       const file = event.target.files[0];
       if (file) {
@@ -438,15 +547,14 @@
       }
     }
 
-    // 4. 배경 블러 조절
+    // 배경 블러 변경
     function changeBgBlur(val) {
       bgLayer.style.filter = `blur(${val}px)`;
       document.getElementById('blur-value-text').innerText = `${val}px`;
     }
 
-    // 5. 이미지 저장 (모바일 스케일 초기화 후 고화질 저장)
+    // 이미지 저장 기능
     function saveAsImage() {
-      // 캡처 중 비율 변형 방지를 위해 원본 비율 스케일로 잠시 복구
       const currentTransform = canvasArea.style.transform;
       canvasArea.style.transform = 'scale(1)';
 
@@ -454,7 +562,6 @@
         scale: 2,
         useCORS: true
       }).then(canvas => {
-        // 캡처 후 기존 화면에 맞춘 스케일 상태로 재복구
         canvasArea.style.transform = currentTransform;
 
         const link = document.createElement('a');
