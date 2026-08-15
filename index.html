@@ -15,63 +15,115 @@
     }
 
     body {
-      background-color: #f0f2f5;
+      background-color: #e2e8f0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 24px;
     }
 
-    /* 컨트롤 버튼 영역 */
+    /* 상단 컨트롤 바 */
     .controls {
+      background-color: #ffffff;
+      padding: 14px 24px;
+      border-radius: 12px;
       margin-bottom: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .control-group input[type="color"] {
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+    }
+
+    .control-group input[type="range"] {
+      width: 100px;
     }
 
     .btn-save {
-      background-color: #2b2b2b;
+      background-color: #1e293b;
       color: #ffffff;
       border: none;
-      padding: 12px 28px;
-      font-size: 16px;
+      padding: 10px 22px;
+      font-size: 15px;
       font-weight: bold;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       transition: background 0.2s ease;
+      margin-left: auto;
     }
 
     .btn-save:hover {
-      background-color: #4a4a4a;
+      background-color: #334155;
     }
 
-    /* 틀 전체 프레임 Canvas */
+    /* 페어틀 전체 메인 프레임 */
     #frame-canvas {
-      width: 1200px;
-      height: 580px;
+      width: 1400px;
+      height: 720px;
       background-color: #ffffff;
-      padding: 24px;
+      padding: 30px;
       display: grid;
-      grid-template-columns: 310px 1fr 310px;
-      gap: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      grid-template-columns: 380px 1fr 380px;
+      gap: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       position: relative;
+      overflow: hidden; /* 배경 블러 번짐 방지 */
+    }
+
+    /* 배경 레이어 (색상/이미지/블러 전용) */
+    .bg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+      transition: filter 0.1s ease;
+    }
+
+    /* 콘텐츠 영역 (배경 위 레이어) */
+    .char-column, .center-column {
+      position: relative;
+      z-index: 1;
     }
 
     /* 이미지 업로드 공통 슬롯 */
     .img-slot {
-      background-color: #f7f7f9;
-      border: 1px dashed #cccccc;
-      border-radius: 4px;
+      background-color: rgba(247, 247, 249, 0.85);
+      border: 1px dashed #b0b0b0;
+      border-radius: 6px;
       position: relative;
       cursor: pointer;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .img-slot:hover {
-      border-color: #888888;
+      border-color: #555555;
+      background-color: rgba(238, 238, 242, 0.95);
     }
 
     .img-slot input[type="file"] {
@@ -86,103 +138,142 @@
     }
 
     .img-slot .placeholder-text {
-      color: #888888;
+      color: #666666;
       font-size: 13px;
+      font-weight: 500;
       pointer-events: none;
       text-align: center;
       padding: 4px;
     }
 
-    /* 이미지가 첨부되었을 때 표시 */
+    /* 이미지가 첨부되었을 때 */
+    .img-slot.has-image {
+      border-style: solid;
+      border-color: transparent;
+      background-color: transparent;
+    }
+
     .img-slot.has-image img {
       display: block;
     }
+
     .img-slot.has-image .placeholder-text {
       display: none;
     }
 
-    /* 좌/우 캐릭터 컬럼 공통 */
+    /* 좌/우 캐릭터 컬럼 레이아웃 */
     .char-column {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .top-duo {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      height: 130px;
-    }
-
-    .mid-duo {
-      display: flex;
-      gap: 10px;
-      height: 250px;
-    }
-
-    .ld-slot {
-      flex: 1.2;
-    }
-
-    .animal-slot {
-      flex: 0.8;
-      height: 120px;
-    }
-
-    .text-area-box {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      flex: 1;
-    }
-
-    .text-area-box input {
-      border: none;
-      outline: none;
-      font-family: 'Georgia', cursive, sans-serif;
-      font-size: 20px;
-      font-style: italic;
-      color: #bf4343;
-      background: transparent;
-    }
-
-    .text-area-box textarea {
-      border: none;
-      outline: none;
-      resize: none;
-      background: transparent;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #333333;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* 중앙 컬럼 (메인 일러스트) */
-    .center-column {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .main-illust-top {
+    .top-duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      height: 150px;
+    }
+
+    .mid-duo {
+      display: flex;
+      gap: 14px;
+      height: 494px;
+    }
+
+    /* LD 전신 확대 영역 */
+    .ld-slot {
+      flex: 1.6; /* 기존 1.2에서 1.6으로 넓이 대폭 확장 */
+      height: 100%;
+    }
+
+    .side-sub-box {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 12px;
+    }
+
+    .animal-slot {
+      height: 140px;
+    }
+
+    /* 서명/로고 이미지 슬롯 (비율 맞춰 쏙 들어가도록 contain 사용) */
+    .signature-slot {
+      height: 70px;
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .signature-slot img {
+      object-fit: contain !important; /* 서명 이미지는 잘리지 않고 전체 보기 */
+    }
+
+    /* 텍스트 설명 박스 */
+    .text-area-box {
+      display: flex;
+      flex-direction: column;
       flex: 1;
     }
 
-    .main-illust-bottom {
+    .text-area-box textarea {
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 6px;
+      outline: none;
+      resize: none;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #222222;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(2px);
+    }
+
+    .text-area-box textarea:focus {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: #888888;
+    }
+
+    /* 중앙 컬럼 (메인 일러스트 2개) */
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .main-illust-top, .main-illust-bottom {
       flex: 1;
     }
   </style>
 </head>
 <body>
 
+  <!-- 상단 컨트롤 바 -->
   <div class="controls">
+    <div class="control-group">
+      <label for="bg-color-picker">🎨 배경 색상:</label>
+      <input type="color" id="bg-color-picker" value="#ffffff" onchange="changeBgColor(this.value)">
+    </div>
+
+    <div class="control-group">
+      <label for="bg-img-input">🖼️ 배경 이미지:</label>
+      <input type="file" id="bg-img-input" accept="image/*" onchange="uploadBgImage(event)">
+    </div>
+
+    <div class="control-group">
+      <label for="bg-blur-range">💧 이미지 블러:</label>
+      <input type="range" id="bg-blur-range" min="0" max="20" value="0" oninput="changeBgBlur(this.value)">
+      <span id="blur-value-text" style="font-weight: normal; font-size: 12px;">0px</span>
+    </div>
+
     <button class="btn-save" onclick="saveAsImage()">📷 이미지로 저장하기</button>
   </div>
 
   <!-- 페어틀 메인 캔버스 -->
   <div id="frame-canvas">
+    <!-- 배경 설정 레이어 -->
+    <div id="bg-layer" class="bg-layer"></div>
 
     <!-- 좌측 캐릭터 (Character A) -->
     <div class="char-column">
@@ -200,23 +291,28 @@
         </label>
       </div>
 
-      <!-- 중단: LD 전신 A + 동물화 A -->
+      <!-- 중단: LD 전신 A + (동물화/서명/설명) -->
       <div class="mid-duo">
         <label class="img-slot ld-slot">
-          <span class="placeholder-text">LD 전신 A</span>
+          <span class="placeholder-text">LD 전신 A (확대됨)</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
           <img src="" alt="LD 전신 A">
         </label>
-        <div style="display: flex; flex-direction: column; flex: 0.8; gap: 10px;">
+        <div class="side-sub-box">
           <label class="img-slot animal-slot">
             <span class="placeholder-text">동물화 A</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="동물화 A">
           </label>
-          <!-- 캐릭터 A 로고/설명 -->
+          <!-- 캐릭터 A 서명/로고 이미지 슬롯 -->
+          <label class="img-slot signature-slot">
+            <span class="placeholder-text">서명/로고 이미지 A</span>
+            <input type="file" accept="image/*" onchange="loadImage(event, this)">
+            <img src="" alt="서명 이미지 A">
+          </label>
+          <!-- 캐릭터 A 설명 -->
           <div class="text-area-box">
-            <input type="text" value="Monet" placeholder="이름/서명 입력">
-            <textarea placeholder="캐릭터 설명을 입력하세요...">마도학자 예술품, 20세기 말 전시...</textarea>
+            <textarea placeholder="캐릭터 A 설명을 입력하세요...&#10;마도학자 예술품, 20세기 말 전시..."></textarea>
           </div>
         </div>
       </div>
@@ -225,12 +321,12 @@
     <!-- 중앙 메인 일러스트 2개 -->
     <div class="center-column">
       <label class="img-slot main-illust-top">
-        <span class="placeholder-text">메인 일러스트 1 (16:9 추천)</span>
+        <span class="placeholder-text">메인 일러스트 1</span>
         <input type="file" accept="image/*" onchange="loadImage(event, this)">
         <img src="" alt="메인 일러스트 1">
       </label>
       <label class="img-slot main-illust-bottom">
-        <span class="placeholder-text">메인 일러스트 2 / 음반 커버</span>
+        <span class="placeholder-text">메인 일러스트 2</span>
         <input type="file" accept="image/*" onchange="loadImage(event, this)">
         <img src="" alt="메인 일러스트 2">
       </label>
@@ -252,22 +348,27 @@
         </label>
       </div>
 
-      <!-- 중단: 동물화 B + LD 전신 B -->
+      <!-- 중단: (동물화/서명/설명) + LD 전신 B -->
       <div class="mid-duo">
-        <div style="display: flex; flex-direction: column; flex: 0.8; gap: 10px;">
+        <div class="side-sub-box">
           <label class="img-slot animal-slot">
             <span class="placeholder-text">동물화 B</span>
             <input type="file" accept="image/*" onchange="loadImage(event, this)">
             <img src="" alt="동물화 B">
           </label>
-          <!-- 캐릭터 B 로고/설명 -->
-          <div class="text-area-box" style="text-align: right;">
-            <input type="text" value="Mary" placeholder="이름/서명 입력" style="text-align: right;">
-            <textarea placeholder="캐릭터 설명을 입력하세요..." style="text-align: right;">마도학자 예술품으로 1930년대 전시...</textarea>
+          <!-- 캐릭터 B 서명/로고 이미지 슬롯 -->
+          <label class="img-slot signature-slot">
+            <span class="placeholder-text">서명/로고 이미지 B</span>
+            <input type="file" accept="image/*" onchange="loadImage(event, this)">
+            <img src="" alt="서명 이미지 B">
+          </label>
+          <!-- 캐릭터 B 설명 -->
+          <div class="text-area-box">
+            <textarea placeholder="캐릭터 B 설명을 입력하세요...&#10;마도학자 예술품으로 1930년대 전시..." style="text-align: right;"></textarea>
           </div>
         </div>
         <label class="img-slot ld-slot">
-          <span class="placeholder-text">LD 전신 B</span>
+          <span class="placeholder-text">LD 전신 B (확대됨)</span>
           <input type="file" accept="image/*" onchange="loadImage(event, this)">
           <img src="" alt="LD 전신 B">
         </label>
@@ -277,7 +378,9 @@
   </div>
 
   <script>
-    // 이미지 선택 시 미리보기 적용 함수
+    const bgLayer = document.getElementById('bg-layer');
+
+    // 1. 이미지 슬롯 미리보기 함수
     function loadImage(event, input) {
       const file = event.target.files[0];
       if (file) {
@@ -292,17 +395,39 @@
       }
     }
 
-    // 캔버스 영역을 PNG 이미지 파일로 변환하여 다운로드
+    // 2. 배경 색상 변경
+    function changeBgColor(color) {
+      bgLayer.style.backgroundColor = color;
+    }
+
+    // 3. 배경 이미지 업로드
+    function uploadBgImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          bgLayer.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 4. 배경 이미지 블러 조절
+    function changeBgBlur(val) {
+      bgLayer.style.filter = `blur(${val}px)`;
+      document.getElementById('blur-value-text').innerText = `${val}px`;
+    }
+
+    // 5. 이미지 저장 함수
     function saveAsImage() {
       const canvasArea = document.getElementById('frame-canvas');
 
       html2canvas(canvasArea, {
-        scale: 2, // 고화질 출력을 위해 scale 2 적용
-        useCORS: true,
-        backgroundColor: '#ffffff'
+        scale: 2, // 고해상도 품질
+        useCORS: true
       }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'pair_frame.png';
+        link.download = 'pair_frame_custom.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
